@@ -33,16 +33,6 @@ nconf.argv({
         describe: 'User to report as poster in Slack channel.',
         default: (nconf.get('slack:user') || 'Unknown Maxrelaxer')
     },
-    'channel': {
-        alias: 'c',
-        describe: 'Slack channel to post song playing changes to.',
-        default: (nconf.get('slack:channel') || '#relaxbot')
-    },
-    'bot': {
-        alias: 'b',
-        describe: 'Name of the bot that posts to Slack channel.',
-        default: (nconf.get('slack:bot') || 'Jams Bot')
-    },
     'url': {
         alias: 'w',
         describe: 'Webhooks URL found on the Slack custom integrations page.',
@@ -58,8 +48,6 @@ nconf.argv({
 
 // Allow argv to override existing prefs
 nconf.set('slack:user', nconf.get('user'));
-nconf.set('slack:channel', nconf.get('channel'));
-nconf.set('slack:bot', nconf.get('bot'));
 if (nconf.get('url') !== null) nconf.set('slack:url', nconf.get('url'));
 
 // Save only if -s flag passed
@@ -73,9 +61,6 @@ var currentTrack,
     payload;
 
 payload = {
-    'username': nconf.get('slack:bot'),
-    'channel': nconf.get('slack:channel'),
-    'icon_emoji': ':musical_note:',
     'text': null
 };
 
@@ -105,14 +90,15 @@ function onPlaying(data) {
     payload['text'] = message;
 
     if (message && message != currentTrack) {
+      console.log(JSON.stringify(payload));
         request.post({
             url: nconf.get('slack:url'),
-            json: true,
             body: JSON.stringify(payload)
 
         }, function(err, resp, body) {
             if (err) console.error(err);
             if (resp && body) {
+                console.log(body);
                 console.log('Slack says OK!'.green);
                 currentTrack = message;
             }
